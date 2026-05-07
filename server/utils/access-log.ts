@@ -37,6 +37,7 @@ export const blobsMap = {
   blob14: 'device',
   blob15: 'deviceType',
   blob16: 'COLO',
+  blob17: 'accessId',
 } as const
 
 export const doublesMap = {
@@ -152,7 +153,6 @@ export function useAccessLog(event: H3Event) {
     latitude: Number(cf?.latitude || getHeader(event, 'cf-iplatitude') || 0),
     longitude: Number(cf?.longitude || getHeader(event, 'cf-iplongitude') || 0),
   }
-
   if (process.env.NODE_ENV === 'production') {
     return env.ANALYTICS.writeDataPoint({
       indexes: [link.id], // only one index
@@ -160,7 +160,6 @@ export function useAccessLog(event: H3Event) {
       doubles: logs2doubles(accessLogs),
     })
   }
-
   console.log('access logs:', accessLogs, logs2blobs(accessLogs), logs2doubles(accessLogs), { ...blobs2logs(logs2blobs(accessLogs)), ...doubles2logs(logs2doubles(accessLogs)) })
   return Promise.resolve()
 }

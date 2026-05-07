@@ -3,11 +3,6 @@ import { LinkSchema } from '#shared/schemas/link'
 const slugValidator = LinkSchema.shape.slug
 
 export default eventHandler(async (event) => {
-  // Skip API routes
-  if (event.path.startsWith('/api/')) {
-    return
-  }
-
   const { cloudflare } = event.context
   const { R2 } = cloudflare.env
   const key = getRouterParam(event, 'key')

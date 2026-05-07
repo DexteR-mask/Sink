@@ -40,13 +40,6 @@ export async function getLink(event: H3Event, slug: string, cacheTtl?: number): 
   return await KV.get(`link:${slug}`, { type: 'json', cacheTtl }) as Link | null
 }
 
-export async function putLinkAccessId(event: H3Event, slug: string, accessId: string): Promise<void> {
-  const { cloudflare } = event.context
-  console.log('putLinkAccessId', `slug:${slug} accessId:${accessId}`)
-  const { KV } = cloudflare.env
-  await KV.put(`link:${slug}:accessId`, accessId)
-}
-
 export async function getLinkWithMetadata(event: H3Event, slug: string): Promise<{ link: Link | null, metadata: Record<string, unknown> | null }> {
   const { cloudflare } = event.context
   const { KV } = cloudflare.env
