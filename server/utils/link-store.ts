@@ -1,6 +1,6 @@
-import type { LinkSchema } from '#shared/schemas/link'
 import type { H3Event } from 'h3'
 import type { z } from 'zod'
+import type { LinkSchema } from '#shared/schemas/link'
 import { parseURL, stringifyParsedURL } from 'ufo'
 
 type Link = z.infer<typeof LinkSchema>
@@ -38,6 +38,13 @@ export async function getLink(event: H3Event, slug: string, cacheTtl?: number): 
   const { cloudflare } = event.context
   const { KV } = cloudflare.env
   return await KV.get(`link:${slug}`, { type: 'json', cacheTtl }) as Link | null
+}
+
+export async function putLinkAccessId(event: H3Event, slug: string, accessId: string): Promise<void> {
+  const { cloudflare } = event.context
+  console.log('putLinkAccessId', `slug:${slug} accessId:${accessId}`)
+  const { KV } = cloudflare.env
+  await KV.put(`link:${slug}:accessId`, accessId)
 }
 
 export async function getLinkWithMetadata(event: H3Event, slug: string): Promise<{ link: Link | null, metadata: Record<string, unknown> | null }> {

@@ -1,5 +1,5 @@
 import type { Link } from '@/types'
-import { parsePath, withQuery } from 'ufo'
+import { withQuery } from 'ufo'
 
 const SOCIAL_BOTS = [
   'applebot',
@@ -20,6 +20,7 @@ const SOCIAL_BOTS = [
 ]
 
 const APPLE_DEVICE_UA_MARKERS = ['iphone', 'ipad', 'ipod', 'crios']
+const PATH_TRIM_REGEX = /^\/|\/$/g
 
 function isSocialBot(userAgent: string): boolean {
   const ua = userAgent.toLowerCase()
@@ -48,13 +49,21 @@ function hasOgConfig(link: Link): boolean {
 }
 
 export default eventHandler(async (event) => {
-  const { pathname: slug } = parsePath(event.path.replace(/^\/|\/$/g, ''))
+  // Skip API routes
+  if (event.path.startsWith('/api/')) {
+    return
+  }
+
+  const rawPath = event.path.replace(PATH_TRIM_REGEX, '')
+  const [slug, accessId, ...pathRest] = rawPath.split('/')
   const { slugRegex, reserveSlug } = useAppConfig()
   const { homeURL, linkCacheTtl, caseSensitive, redirectWithQuery, redirectStatusCode } = useRuntimeConfig(event)
   const { cloudflare } = event.context
 
-  if (event.path === '/' && homeURL)
+  if (event.path === '/' && homeURL) {
+    setHeader(event, 'Cache-Control', 'no-cache, no-store, must-revalidate')
     return sendRedirect(event, homeURL)
+  }
 
   const { notFoundRedirect } = useRuntimeConfig(event)
   // Bypass redirect check for notFoundRedirect path to prevent infinite loop
@@ -62,7 +71,7 @@ export default eventHandler(async (event) => {
     return
   }
 
-  if (slug && !reserveSlug.includes(slug) && slugRegex.test(slug) && cloudflare) {
+  if (slug && !reserveSlug.includes(slug) && pathRest.length === 0 && slugRegex.test(slug) && cloudflare) {
     let link: Link | null = null
 
     const lowerCaseSlug = slug.toLowerCase()
@@ -126,6 +135,15 @@ export default eventHandler(async (event) => {
         }
         else {
           return sendNoStoreHtml(generateUnsafeWarningHtml(slug, link.url, { locale: getLocale() }))
+        }
+      }
+
+      if (accessId) {
+        try {
+          event.context.accessId = accessId
+        }
+        catch (error) {
+          console.error('Failed saving access id:', error)
         }
       }
 

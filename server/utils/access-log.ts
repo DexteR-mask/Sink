@@ -14,8 +14,10 @@ import {
 import { parseURL } from 'ufo'
 import { getFlag } from '@/utils/flag'
 
+const NON_DIGIT_REGEX = /\D/g
+
 function toBlobNumber(blob: string) {
-  return +blob.replace(/\D/g, '')
+  return +blob.replace(NON_DIGIT_REGEX, '')
 }
 
 export const blobsMap = {
@@ -113,6 +115,7 @@ export function useAccessLog(event: H3Event) {
   const { cloudflare } = event.context
   const { request: { cf }, env } = cloudflare
   const link = event.context.link || {}
+  const accessId = event.context.accessId
 
   const isBot = cf?.botManagement?.verifiedBot
     || ['crawler', 'fetcher'].includes(uaInfo?.browser?.type || '')
@@ -130,6 +133,7 @@ export function useAccessLog(event: H3Event) {
     url: link.url,
     slug: link.slug,
     ua: userAgent,
+    accessId,
     ip,
     referer,
     country: cf?.country,

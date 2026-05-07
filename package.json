@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "nuxt dev --port 7465",
+    "dev": "nuxt dev",
     "analyze": "nuxt analyze",
     "test": "vitest",
     "build": "NODE_OPTIONS=--max-old-space-size=8192 nuxt build",
